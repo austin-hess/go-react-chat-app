@@ -5,7 +5,7 @@ class ChatInput extends Component {
     render() {
         return (
             <div className="ChatInput">
-                <input onKeyDown={this.props.send} />
+                <input placeholder={this.props.label} onKeyDown={this.props.onInput} />
             </div>
         )
     }

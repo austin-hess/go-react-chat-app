@@ -2,75 +2,65 @@ import React, { Component } from 'react'
 import './ChatApp.scss';
 
 // import components
-import ChatroomList from '../ChatroomList';
 import ChatWindow from '../ChatWindow';
+import ChatInput from '../ChatInput';
+import Header from '../Header';
 
-// import backend services
-import ChatroomAPI from '../../api/ChatroomAPI';
-import ChatroomConnection from '../../api/ChatroomConnection';
+// import services/utils
+import ChatroomConnection from '../../services/ChatroomConnection';
 
 class ChatApp extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            activeChatWindow: undefined,
-            roomConnections: new Map(),
-            availableChatrooms: []
-        }
-        this.handleRoomSelect = this.handleRoomSelect.bind(this);
-        this.createNewChatroom = this.createNewChatroom.bind(this);
+            messages: [],
+            username: ""
+        };
+        this.handleMessage = this.handleMessage.bind(this);
+        this.sendMessage = this.sendMessage.bind(this);
+        this.setUsername = this.setUsername.bind(this);
     }
 
     componentDidMount() {
-        ChatroomAPI.getAvailableChatrooms().then(response => {
-            console.log(`Received existing rooms: ${response.roomIds}`);
-            const availableChatrooms = response.roomIds;
-            const activeChatWindow = availableChatrooms && availableChatrooms.length > 0 ? availableChatrooms[0] : undefined;
-            console.log(`Setting available chat rooms: ${availableChatrooms}`);
-            console.log(`Setting active chat window: ${activeChatWindow}`);
-            let roomConnections = new Map();
-            response.roomIds.forEach(id => {
-                roomConnections.set(id, new ChatroomConnection(id));
-            });
-            this.setState({ 
-                roomConnections,
-                availableChatrooms,
-                activeChatWindow
-            });
-        });
+        this.connection = ChatroomConnection(this.handleMessage);
     }
 
-    handleRoomSelect(event) {
-        console.log(`Setting active chat window to: ${event.target.value}`);
-        this.setState({
-            activeChatWindow: event.target.value
-        });
+    handleMessage(msg) {
+        console.log(msg);
+        this.setState(prevState => ({
+            messages: [...prevState.messages, msg]
+        }));
+    }   
+
+    sendMessage(event) {
+        if (event.keyCode === 13) {
+            this.connection.send(JSON.stringify({
+                username: this.state.username,
+                body: event.target.value
+            }));
+            event.target.value = "";
+        }
     }
 
-    createNewChatroom() {
-        ChatroomAPI.createChatroom().then(response => {
-            this.setState(prevState => {
-                let roomConnections = new Map(prevState.roomConnections.set(response, new ChatroomConnection(response)));
-                return { roomConnections };
+    
+
+    setUsername(event) {
+        if (event.keyCode === 13) {
+            this.setState({
+                username: event.target.value
             });
-        });
+            event.target.value = "";
+        }
     }
 
     render() {
-        const chatWindow = this.state.activeChatWindow ?
-                        <ChatWindow 
-                            connection={this.state.roomConnections.get(this.state.activeChatWindow)} 
-                            roomId={this.state.activeChatWindow}
-                        /> :
-                        <></>;
+        const chatWindow = this.state.messages ? <ChatWindow username={this.state.username} messages={this.state.messages} /> : <></>;
         return (
             <div className="ChatApp">
-                <button onClick={this.createNewChatroom}>Create New Chatroom</button>
-                <ChatroomList 
-                    handleRoomSelect={this.handleRoomSelect}
-                    chatrooms={this.state.availableChatrooms ? this.state.availableChatrooms : []} 
-                />
+                <Header username={this.state.username} connect={this.connectToWebsocket} />
                 {chatWindow}
+                <ChatInput label="Send Message" onInput={this.sendMessage} />
+                <ChatInput label="Username" onInput={this.setUsername} />
             </div>
         )
     }

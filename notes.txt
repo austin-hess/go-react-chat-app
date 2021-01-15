@@ -1,0 +1,44 @@
+Client creates WebSocket and connects to server
+    - Client: Selects a new chatroom
+        - Client: Send message to server over WS that it wants to connect to a chatroom
+                Request:
+                {
+                    "action": "connectChatroom",
+                    "roomId": n
+                }
+                Response:
+                {
+                    "status": "success" | "error"
+                }
+        - Client: Add roomId to activeChatrooms in ChatApp
+
+    - Client: Creates a new chatroom
+        - Client: Send message to server over WS that it wants to create a chatroom
+                Request:
+                {
+                    "action": "createChatroom"
+                }
+                Response:
+                {
+                    "status": "success" | "error",
+                    "roomId": n
+                }
+        - Server: Increments numActiveChatrooms
+        - Client: Add roomId to activeChatrooms in ChatApp
+
+    - Client: Sends a message to a chatroom
+        - Client: Send message to server over WS that it wants to send a message to a chatroom
+                Request:
+                {
+                    "action": "sendMessage",
+                    "roomId": n,
+                    "message": "xyz"
+                }
+                Response:
+                {
+                    "status": "success" | "error"
+                }
+        - Server: Broadcast message to all clients
+
+    - Client: Receives a message
+        - Client: MessageHandler fcn determines whether or not the message is relevant to the given client. i.e. is the client connected to the chatroom the message was sent to?

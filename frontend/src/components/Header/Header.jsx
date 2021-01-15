@@ -4,7 +4,7 @@ import "./Header.scss";
 const Header = (props) => (
     <div className="header">
         <h2>Realtime Chat App</h2>
-        <button onClick={props.newChatroomAction}>Create New Chatroom</button>
+        <h4>Username: {props.username}</h4>
     </div>
 );
 

@@ -7,9 +7,9 @@ class ChatMessage extends Component {
     }
 
     render() {
-        return (
-            <div className="ChatMessage">{this.props.children}</div>
-        );
+        return this.props.me ? 
+            <div className="ChatMessage me">{this.props.children}</div> :
+            <div className="ChatMessage">{this.props.children}</div>;
     }
 }
 
